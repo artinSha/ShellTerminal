@@ -1,0 +1,104 @@
+#define _POSIX_C_SOURCE 200809L
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+// #include "msgs.h"
+#define BUFFER_SIZE 256
+
+int main() {
+  while (true) {
+    char buffer[BUFFER_SIZE];
+
+    // write command line prompt
+    write(STDOUT_FILENO, "currentdirectoryplaceholder", 27);
+
+    // read input from user
+    ssize_t bytes_read = read(STDIN_FILENO, buffer, BUFFER_SIZE - 1);
+
+    // read returns -1 upon error, perform error-check
+    if (bytes_read < 0) {
+      //const char *msg = FORMAT_MSG("shell", READ_ERROR_MSG);
+      // write(STDERR_FILENO, msg, strlen(msg));
+      continue;
+    }
+
+    // Handle input stream being closed
+    if (bytes_read == 0) {
+      break;
+    }
+
+    // remove newline character
+    buffer[bytes_read] = '\0';
+    if (bytes_read > 0 && buffer[bytes_read - 1] == '\n') {
+      // replace newline with null
+      buffer[bytes_read - 1] = '\0';
+      bytes_read--;
+    }
+
+    // TODO: Fix this later, make it match requirements
+    if (strcmp(buffer, "exit") == 0) {
+      break;
+    }
+
+    // Create array to store arguments
+    char *arguments[20];
+    int arg_count = 0;
+    bool background = false;
+
+    // Now, like in lab 2, use strtok_r to parse input
+    char *saveptr = NULL;
+    char *token = strtok_r(buffer, " ", &saveptr);
+    while (token != NULL && arg_count < 19) {
+      // Add the word/argument to the array
+      arguments[arg_count++] = token;
+      token = strtok_r(NULL, " ", &saveptr);
+    }
+    // Not sure if necessary, but make sure the array ends in NULL
+    arguments[arg_count] = NULL;
+
+    // Check if last token is '&'
+    if (arg_count > 0 && strcmp(arguments[arg_count - 1], "&") == 0) {
+      background = true;
+      arguments[arg_count - 1] = NULL; // Remove '&'
+      arg_count--;
+    }
+
+    // Now fork a new process
+    pid_t pid = fork();
+    if (pid < 0) {
+      // Check if fork failed
+      // char *msg = FORMAT_MSG("fork", FORK_ERROR_MSG);
+      // write(STDERR_FILENO, msg, strlen(msg));
+      continue;
+    } else if (pid == 0) {
+      // Now we use execvp because we can pass it an array of arguments
+      if (execvp(arguments[0], arguments) == -1) {
+        // Note that execvp only returns in case of an error
+        // char *msg = FORMAT_MSG("shell", EXEC_ERROR_MSG);
+        // write(STDERR_FILENO, msg, strlen(msg));
+        // Here we want to kill the child if execvp fails
+        _exit(1);
+      }
+    } else {
+      // We are in the parent
+      if (background) {
+        // We are running in background
+        // TODO: Do whatever, maybe keep track so we can kill zombies later?
+      } else {
+        // We are running in foreground, wait for process to return
+        int status;
+        int result = waitpid(pid, &status, 0);
+        // Check if waitpid failed
+        if (result == -1) {
+          // char *msg = FORMAT_MSG("shell", WAIT_ERROR_MSG);
+          // write(STDERR_FILENO, msg, strlen(msg));
+          continue;
+        }
+      }
+    }
+  }
+}

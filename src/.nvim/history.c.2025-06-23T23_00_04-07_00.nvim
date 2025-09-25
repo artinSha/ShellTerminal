@@ -1,0 +1,9 @@
+#include "history.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+  char cmd[MAX_CMD_LEN];
+  int number;
+} HistoryEntry;

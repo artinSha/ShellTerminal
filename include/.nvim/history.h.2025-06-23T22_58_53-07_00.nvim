@@ -1,0 +1,12 @@
+#ifndef HISTORY_H
+#define HISTORY_H
+
+#define MAX_HISTORY 50
+#define MAX_CMD_LEN 256
+
+void add_to_history(char *cmd);
+void display_history(void);
+char *find_command_by_number(int cmd_num);
+char *get_last_command(void);
+
+#endif
