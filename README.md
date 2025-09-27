@@ -26,13 +26,6 @@ A UNIX-like shell implementation in C that provides command execution, built-in 
 - **`!n`**: Execute command number n from history
 - **`!!`**: Execute the last command
 
-### Technical Features
-- Dynamic shell prompt showing current directory (`/current/path$`)
-- Proper zombie process cleanup for background processes
-- Signal-safe I/O operations
-- Memory leak prevention
-- Robust error handling with appropriate error messages
-
 ## Project Structure
 
 ```
@@ -128,39 +121,6 @@ The tests cover:
 - History feature operations
 - Signal handling
 - Error conditions
-
-## Implementation Details
-
-### Process Management
-- Uses `fork()` and `exec()` family functions for command execution
-- Implements proper `waitpid()` for foreground processes
-- Automatic cleanup of zombie background processes
-
-### Signal Handling
-- Custom SIGINT handler prevents shell termination on Ctrl+C
-- Signal-safe functions used for I/O operations
-- Proper errno handling for interrupted system calls
-
-### Memory Management
-- Dynamic memory allocation for command parsing and history storage
-- Proper cleanup to prevent memory leaks
-- Sanitizer-tested to ensure memory safety
-
-### Input Processing
-- Robust command line parsing using `strtok_r()`
-- Support for multiple arguments and background execution
-- Handles empty commands and whitespace gracefully
-
-## Error Handling
-
-The shell provides comprehensive error messages for various failure conditions:
-- Command execution failures
-- Directory change errors
-- Invalid history references
-- System call failures
-- Argument validation errors
-
-All error messages follow a consistent format defined in the included message macros.
 
 ## Compatibility
 
